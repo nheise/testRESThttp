@@ -3,7 +3,7 @@ var assert = require('assert');
 
 var FILE_PATH = './resources/test.txt';
 
-var fileReaderFactory = require('../lib/FileReader.js');
+var fileReaderFactory = require('../RESThttp/lib/FileReader.js');
 
 var fileReader1 = fileReaderFactory.createFileReader();
 
@@ -34,11 +34,9 @@ fileReader1.readFromPositionToPosition(FILE_PATH, range.begin, range.end);
 
 var fileReader2 = fileReaderFactory.createFileReader();
 
-var readCallback = function(buffer, bytesRead, contentSize) {        
-    console.log('content-size:' + contentSize);
+var readCallback = function(buffer, bytesRead) {
     console.log(bytesRead + ' bytes read.');
     console.log('content:' + buffer);
-    assert.equal(contentSize, 24);
     assert.equal(bytesRead, 24);
     assert.equal(buffer, "Das ist eine Test Datei.");
 };

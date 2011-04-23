@@ -4,7 +4,7 @@
 
 var assert = require('assert');
 
-var uriPattern = require('../core/URIPattern.js');
+var uriPattern = require('../RESThttp/lib/URIPattern.js');
 
 var uriPatterns = [
 	uriPattern.create("/test/{id}"),

@@ -3,9 +3,9 @@
  */
 var assert = require('assert');
 
-var responseLoader = require( '../lib/ResponseLoader.js' ).responseLoader;
+var responseLoader = require( '../RESThttp/lib/ResponseLoader.js' ).responseLoader;
 
-var mediaType = require('../lib/MediaType.js');
+var mediaType = require('../RESThttp/lib/MediaType.js');
 
 var htmlResponse = responseLoader[mediaType.TEXT_HTML]();
 
