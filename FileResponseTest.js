@@ -19,12 +19,12 @@ var fileResponseWithRange = fileResponseFactory.createFileResponse( headerForRes
 
 assert.notEqual( fileResponse, fileResponseWithRange );
 
-fileResponse.onContent( function( header, data, encoding ) {
+fileResponse.onContent( function( data, encoding ) {
     assert.equal( data, "Das ist eine Test Datei." );
     console.log( "test ok." );
 } );
 
-fileResponseWithRange.onPartialContent( function( header, data, encoding ) {
+fileResponseWithRange.onPartialContent( function( data, encoding ) {
     assert.equal( data, "as i" );
     console.log( "range test ok." );
 } );
