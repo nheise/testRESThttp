@@ -8,11 +8,11 @@ var uriPattern = require('../RESThttp/lib/URIPattern.js');
 
 var uriPatterns = [
 	uriPattern.create("/test/{id}"),
-	uriPattern.create("/product/{category}/{id}")
+	uriPattern.create("/products/{category}/{id}")
 ];
 var uris = [
 	"/test/1234",
-	"/product/shoes/1234"
+	"/products/shoes/1234"
 ];
 
 for(index in uris) {
