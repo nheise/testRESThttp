@@ -68,8 +68,24 @@ tests['callReadWithoutRangeShouldReadTheHoleFile'] = function() {
 };
 
 ;(function() {
+	
+	var failureCount = 0;
+	
+	var startTime = new Date().getTime();
+	
     for( var test in tests ) {
         setUp();
-        tests[test]();
+        try {
+        	tests[test]();
+        }
+        catch( err ) {
+        	fialureCount++;
+        	console.log( err );
+        }
+        
     }
+    
+    var endTime = new Date().getTime();
+    
+    console.log( "Test run : " + tests.length + " , Failures: " + failureCount + ", Time elapsed: " + ( endTime - startTime ) + " miliSec" );
 })();
