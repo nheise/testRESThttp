@@ -1,39 +1,38 @@
 
-exports.create = function( testCase ) {
-    return new UnitTestRunner( testCase );
+exports.create = function( ) {
+    return new UnitTestRunner( );
 };
 
-function UnitTestRunner( testCase ) {
+function UnitTestRunner( ) {
     
-//    console.log( testCase );
+    var self = this;
     
-    runTests();
+    this.setUp;
     
-    function runTests() {
-        
-        var failureCount = 0;
-        
-        var startTime = new Date().getTime();
-        
-        for( var test in testCase.tests ) {
-            testCase.setUp();
-//            try {
-//                console.log( test );
-                testCase.tests[test]();
-//            }
-//            catch( err ) {
-//                failureCount++;
-//                console.log( err );
-//            }
-//            
+    this.tests = [];
+    
+    process.on('exit', function () {
+        for( var index in self.tests ) {
+            self.tests[ index ].endTime = new Date().getTime();
+            console.log( "Test run : " + self.tests[ index ].test.name + ", Time elapsed: " + ( self.tests[ index ].endTime - self.tests[ index ].startTime ) + " milis" );
         }
+    });
+    
+    this.run = function() {
         
-//        console.log( testCase.tests[0].name );
-        
-        var endTime = new Date().getTime();
-        
-        console.log( "Test run : " + testCase.tests.length + " , Failures: " + failureCount + ", Time elapsed: " + ( endTime - startTime ) + " miliSec" );
-    }
+        for( var index in self.tests ) {
+            self.setUp();
+
+            self.tests[ index ].startTime = new Date().getTime();
+            
+            self.tests[ index ].test();
+        }
+
+    };
+    
+    this.add = function( test ) {
+        self.tests.push( { test : test } );
+    };
     
     this.verify = function( ) {
         console.log( "verify" );
