@@ -1,4 +1,4 @@
-var runner = require( './UnitTestRunner.js' ).create();
+var runner = require( './UnitTestRunner.js' );
 
 var FILE_PATH = './resources/test.txt';
 
@@ -8,65 +8,69 @@ var fileReaderFactory = require( '../RESThttp/lib/FileReader.js' );
 
 var fileReader = {};
 
-runner.setUp = function() {
+function setUp() {
     fileReader = fileReaderFactory.createFileReader();
 };
 
-runner.add( function readFromPositionToPositionMustReturnTheContentInGivenRange() {
+function errorCallback( err ) {
+    assert.fail( err, err, "readFromPositionToPosition should not fail." );
+};
 
-    function readWithRangeCallback( buffer, bytesRead, contentSize ) {
-        console.log( 'content-size:' + contentSize );
-        console.log( bytesRead + ' bytes read.' );
-        console.log( 'content:' + buffer );
-        assert.equal( contentSize, 24 );
-        assert.equal( bytesRead, 4 );
-        assert.equal( buffer, "as i" );
-    };
+function closeCallback( testName ) {
+    this.reportFinish( testName );
+};
 
-    var errorCallback = function( err ) {
-        assert.fail( err, err, "readFromPositionToPosition should not fail." );
-    };
+runner.test( [
+  { name : 'readFromPositionToPositionMustReturnTheContentInGivenRange',
+    setUp: setUp,
+    expectations : [ { call : 'readWithRangeCallback', exspected : 1 } ], 
+    test : function() {
+       var self = this;
+       
+       function readWithRangeCallback( buffer, bytesRead, contentSize ) {
+           console.log( 'content-size:' + contentSize );
+           console.log( bytesRead + ' bytes read.' );
+           console.log( 'content:' + buffer );
+           assert.equal( contentSize, 24 );
+           assert.equal( bytesRead, 4 );
+           assert.equal( buffer, "as i" );
+           self.reportCall( 'readFromPositionToPositionMustReturnTheContentInGivenRange', 'readWithRangeCallback' );
+       };
 
-    var closeCallback = function() {
-        console.log( "file closed." );
-    };
+       fileReader.onError( errorCallback );
+       fileReader.onData( readWithRangeCallback );
+       fileReader.onClose( function() {
+          self.reportFinish( 'readFromPositionToPositionMustReturnTheContentInGivenRange' );
+       });
 
-    fileReader.onError( errorCallback );
-    fileReader.onData( readWithRangeCallback );
-    fileReader.onClose( closeCallback );
+       var range = {
+           begin : 1,
+           end : 4
+       };
 
-    var range = {
-        begin : 1,
-        end : 4
-    };
+       fileReader.readFromPositionToPosition( FILE_PATH, range.begin, range.end );
+   }
+  },
+  { name : 'callReadWithoutRangeShouldReadTheHoleFile',
+    setUp: setUp,
+    test : function() {
+       var self = this;
 
-    fileReader.readFromPositionToPosition( FILE_PATH, range.begin, range.end );
-    
-} );
+       function readCallback( buffer, bytesRead ) {
+           console.log( bytesRead + ' bytes read.' );
+           console.log( 'content:' + buffer );
+           assert.equal( bytesRead, 24 );
+           assert.equal( buffer, "Das ist eine Test Datei." );
+       };
 
-runner.add( function callReadWithoutRangeShouldReadTheHoleFile() {
-    var fileReader = fileReaderFactory.createFileReader();
+       fileReader.onError( errorCallback );
+       fileReader.onData( readCallback );
+       fileReader.onClose( function() {
+          self.reportFinish( 'callReadWithoutRangeShouldReadTheHoleFile' );
+       });
 
-    var readCallback = function( buffer, bytesRead ) {
-        console.log( bytesRead + ' bytes read.' );
-        console.log( 'content:' + buffer );
-        assert.equal( bytesRead, 24 );
-        assert.equal( buffer, "Das ist eine Test Datei." );
-    };
+       fileReader.read( FILE_PATH );
+   }
+  }
+] );
 
-    var errorCallback = function( err ) {
-        assert.fail( err, err, "readFromPositionToPosition should not fail." );
-    };
-
-    var closeCallback = function() {
-        console.log( "file closed." );
-    };
-
-    fileReader.onError( errorCallback );
-    fileReader.onData( readCallback );
-    fileReader.onClose( closeCallback );
-
-    fileReader.read( FILE_PATH );
-} );
-
-runner.run();
