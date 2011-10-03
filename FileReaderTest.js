@@ -1,76 +1,65 @@
-var runner = require( './UnitTestRunner.js' );
+var unit = require( './unit/Unit.js' );
+
+var assertEquals = unit.assertEquals;
+var assertFail = unit.assertFail;
+var verify = unit.verify;
+var once = unit.once;
 
 var FILE_PATH = './resources/test.txt';
 
-var assert = require( 'assert' );
-
 var fileReaderFactory = require( '../RESThttp/lib/FileReader.js' );
 
-var fileReader = {};
+unit.run( FileReaderTest );
 
-function setUp() {
-    fileReader = fileReaderFactory.createFileReader();
-};
+function FileReaderTest() {
 
-function errorCallback( err ) {
-    assert.fail( err, err, "readFromPositionToPosition should not fail." );
-};
+   var fileReader = {};
+   
+   this.setUp = function() {
+       fileReader = fileReaderFactory.createFileReader();
+   };
+   
+   this.readFromPositionToPositionMustReturnTheContentInGivenRangeTest = function() {
+      var test = this;
+      
+     function readWithRangeCallback( buffer, bytesRead, contentSize ) {
+         assertEquals( contentSize, 24 );
+         assertEquals( bytesRead, 4 );
+         assertEquals( buffer, "as i" );
+     };
 
-function closeCallback( testName ) {
-    this.reportFinish( testName );
-};
+     fileReader.onError( errorCallback );
+     fileReader.onData( verify.invoke( readWithRangeCallback, once ) );
+     fileReader.onClose( function() {
+        test.stop();
+     });
 
-runner.test( [
-  { name : 'readFromPositionToPositionMustReturnTheContentInGivenRange',
-    setUp: setUp,
-    expectations : [ { call : 'readWithRangeCallback', exspected : 1 } ], 
-    test : function() {
-       var self = this;
-       
-       function readWithRangeCallback( buffer, bytesRead, contentSize ) {
-           console.log( 'content-size:' + contentSize );
-           console.log( bytesRead + ' bytes read.' );
-           console.log( 'content:' + buffer );
-           assert.equal( contentSize, 24 );
-           assert.equal( bytesRead, 4 );
-           assert.equal( buffer, "as i" );
-           self.reportCall( 'readFromPositionToPositionMustReturnTheContentInGivenRange', 'readWithRangeCallback' );
-       };
+     var range = {
+         begin : 1,
+         end : 4
+     };
 
-       fileReader.onError( errorCallback );
-       fileReader.onData( readWithRangeCallback );
-       fileReader.onClose( function() {
-          self.reportFinish( 'readFromPositionToPositionMustReturnTheContentInGivenRange' );
-       });
+     fileReader.readFromPositionToPosition( FILE_PATH, range.begin, range.end );
+   };
+   
+   this.readWithoutRangeShouldReadTheHoleFileTest = function() {
+      var test = this;
 
-       var range = {
-           begin : 1,
-           end : 4
-       };
+      function readCallback( buffer, bytesRead ) {
+          assertEquals( bytesRead, 24 );
+          assertEquals( buffer, "Das ist eine Test Datei." );
+      };
 
-       fileReader.readFromPositionToPosition( FILE_PATH, range.begin, range.end );
-   }
-  },
-  { name : 'callReadWithoutRangeShouldReadTheHoleFile',
-    setUp: setUp,
-    test : function() {
-       var self = this;
+      fileReader.onError( errorCallback );
+      fileReader.onData( verify.invoke( readCallback, once ) );
+      fileReader.onClose( function() {
+         test.stop();
+      });
 
-       function readCallback( buffer, bytesRead ) {
-           console.log( bytesRead + ' bytes read.' );
-           console.log( 'content:' + buffer );
-           assert.equal( bytesRead, 24 );
-           assert.equal( buffer, "Das ist eine Test Datei." );
-       };
-
-       fileReader.onError( errorCallback );
-       fileReader.onData( readCallback );
-       fileReader.onClose( function() {
-          self.reportFinish( 'callReadWithoutRangeShouldReadTheHoleFile' );
-       });
-
-       fileReader.read( FILE_PATH );
-   }
-  }
-] );
-
+      fileReader.read( FILE_PATH );
+   };
+   
+   function errorCallback( err ) {
+       assertFail( err, err, "readFromPositionToPosition should not fail." );
+   };
+}
