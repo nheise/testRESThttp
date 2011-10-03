@@ -20,14 +20,17 @@ var fileResponseWithRange = fileResponseFactory.createFileResponse( headerForRes
 assert.notEqual( fileResponse, fileResponseWithRange );
 
 fileResponse.onContent( function( data, encoding ) {
-    assert.equal( data, "Das ist eine Test Datei." );
-    console.log( "test ok." );
+   assert.equal( data, "Das ist eine Test Datei." );
+   console.log( "test ok." );
 } );
 
 fileResponseWithRange.onPartialContent( function( data, encoding ) {
-    assert.equal( data, "as i" );
-    console.log( "range test ok." );
+   assert.equal( data, "as i", "Partial content is not 'as i'" );
+   //console.log(data.toString('utf8', 0, data.size));
+   var headerFields = headerForResponseWithRange.getFields();
+   assert.equal( headerFields['content-range'], 'bytes 1-4/24' );
+   console.log( "range test ok." );
 } );
 
-fileResponse.loadData( FILE_PATH );
+//fileResponse.loadData( FILE_PATH );
 fileResponseWithRange.loadData( FILE_PATH, "bytes=1-4" );

@@ -22,9 +22,9 @@ function FileReaderTest() {
    this.readFromPositionToPositionMustReturnTheContentInGivenRangeTest = function() {
       var test = this;
       
-     function readWithRangeCallback( buffer, bytesRead, contentSize ) {
-         assertEquals( contentSize, 24 );
-         assertEquals( bytesRead, 4 );
+     function readWithRangeCallback( buffer, bytesRead, contentLength ) {
+         assertEquals( contentLength, 24 );
+         assertEquals( bytesRead, 4, "bytes read should be 4");
          assertEquals( buffer, "as i" );
      };
 
@@ -35,11 +35,11 @@ function FileReaderTest() {
      });
 
      var range = {
-         begin : 1,
-         end : 4
+         offset : 1,
+         length : 4
      };
 
-     fileReader.readFromPositionToPosition( FILE_PATH, range.begin, range.end );
+     fileReader.read( FILE_PATH, range );
    };
    
    this.readWithoutRangeShouldReadTheHoleFileTest = function() {
