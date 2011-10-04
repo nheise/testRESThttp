@@ -27,6 +27,10 @@ exports.assertEquals = function( actual, expected, message ) {
 	assert.equal( actual, expected, message );
 };
 
+exports.assertNotEquals = function( actual, expected, message ) {
+	assert.notEqual( actual, expected, message );
+};
+
 exports.assertThrows = function( block, error, message ) {
    assert.throws( block, error, message );
 };
