@@ -1,7 +1,13 @@
 /**
  * 
  */
-var assert = require( 'assert' );
+var unit = require( './unit/Unit.js' );
+
+var assertEquals = unit.assertEquals;
+var assertNotEquals = unit.assertNotEquals;
+var assertFail = unit.assertFail;
+var verify = unit.verify;
+var once = unit.once;
 
 var FILE_PATH = './resources/test.txt';
 
@@ -11,26 +17,47 @@ var httpResponseHeader = require( '../RESThttp/lib/HTTPResponseHeader.js' );
 
 var fileResponseFactory = require( '../RESThttp/lib/FileResponse.js' );
 
-var header = httpResponseHeader.createHTTPResponseHeader( mediaType.TEXT_HTML );
-var headerForResponseWithRange = httpResponseHeader.createHTTPResponseHeader( mediaType.TEXT_HTML );
+unit.run( FileResponseTest );
 
-var fileResponse = fileResponseFactory.createFileResponse( header, 'utf8' );
-var fileResponseWithRange = fileResponseFactory.createFileResponse( headerForResponseWithRange, 'utf8' );
-
-assert.notEqual( fileResponse, fileResponseWithRange );
-
-fileResponse.onContent( function( data, encoding ) {
-   assert.equal( data, "Das ist eine Test Datei." );
-   console.log( "test ok." );
-} );
-
-fileResponseWithRange.onPartialContent( function( data, encoding ) {
-   assert.equal( data, "as i", "Partial content is not 'as i'" );
-   //console.log(data.toString('utf8', 0, data.size));
-   var headerFields = headerForResponseWithRange.getFields();
-   assert.equal( headerFields['content-range'], 'bytes 1-4/24' );
-   console.log( "range test ok." );
-} );
-
-//fileResponse.loadData( FILE_PATH );
-fileResponseWithRange.loadData( FILE_PATH, "bytes=1-4" );
+function FileResponseTest() {
+	
+	var header = {};
+	
+	var fileResponse = {};
+	
+	this.setUp = function() {
+		header = httpResponseHeader.createHTTPResponseHeader( mediaType.TEXT_HTML );
+		fileResponse = fileResponseFactory.createFileResponse( header, 'utf8' );
+	};
+	
+	this.fileResponseFactoryShouldNotReturnTheSameInstacesAtCreateFileResponseTest = function() {
+		var anOtherFileResponse = fileResponseFactory.createFileResponse( header, 'utf8' );
+		assertNotEquals( fileResponse, anOtherFileResponse, "fileResponse should not equal an onther fileResponse." );
+	};
+	
+	this.fileResponseShouldReturnTheHoleFileWhenNoRangeIsGivenTest = function() {
+		var test = this;
+		
+		fileResponse.onContent( function( data, encoding ) {
+		   assertEquals( data, "Das ist eine Test Datei." );
+		   test.stop();
+		} );
+		
+		fileResponse.loadData( FILE_PATH );
+	};
+	
+	this.fileResponseShouldReturnContentInRangeWhenRangeIsGivenTest = function() {
+		var test = this;
+		
+		fileResponse.onPartialContent( function( data, encoding ) {
+		   assertEquals( data, "as i", "Partial content is not 'as i'" );
+		   //console.log(data.toString('utf8', 0, data.size));
+		   var headerFields = header.getFields();
+		   assertEquals( headerFields['content-range'], 'bytes 1-4/24' );
+		   test.stop();
+		} );
+		
+		fileResponse.loadData( FILE_PATH, "bytes=1-4" );
+	};
+	
+}
