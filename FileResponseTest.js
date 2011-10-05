@@ -38,26 +38,46 @@ function FileResponseTest() {
 	this.fileResponseShouldReturnTheHoleFileWhenNoRangeIsGivenTest = function() {
 		var test = this;
 		
-		fileResponse.onContent( function( data, encoding ) {
+		fileResponse.onContent( verify.invoke( function( data, encoding ) {
 		   assertEquals( data, "Das ist eine Test Datei." );
 		   test.stop();
-		} );
+		}, once ) );
 		
 		fileResponse.loadData( FILE_PATH );
 	};
 	
-	this.fileResponseShouldReturnContentInRangeWhenRangeIsGivenTest = function() {
+	this.fileResponseShouldReturnContentFromByte2ToByte4Test = function() {
 		var test = this;
 		
-		fileResponse.onPartialContent( function( data, encoding ) {
-		   assertEquals( data, "as i", "Partial content is not 'as i'" );
-		   //console.log(data.toString('utf8', 0, data.size));
-		   var headerFields = header.getFields();
-		   assertEquals( headerFields['content-range'], 'bytes 1-4/24' );
+		fileResponse.onPartialContent( verify.invoke( function( data, encoding ) {
+		   assertEquals( data, "s ist", "Partial content is not 's ist'" );
+//		   console.log(data.toString('utf8', 0, data.size));
 		   test.stop();
-		} );
+		}, once ) );
 		
-		fileResponse.loadData( FILE_PATH, "bytes=1-4" );
+		fileResponse.loadData( FILE_PATH, "bytes=2-6" );
+	};
+	
+	this.fileResponseShouldReturnContentFromByte5ToEndTest = function() {
+		var test = this;
+		
+		fileResponse.onPartialContent( verify.invoke( function( data, encoding ) {
+		   assertEquals( data, "st eine Test Datei.", "Partial content is not 'st eine Test Datei.'" );
+		   test.stop();
+		}, once ) );
+		
+		fileResponse.loadData( FILE_PATH, "bytes=5-" );
+	};
+	
+	this.fileResponseShouldReturnContentFromStartToByte5Test = function() {
+		var test = this;
+		
+		fileResponse.onPartialContent( verify.invoke( function( data, encoding ) {
+		   assertEquals( data, "Das is", "Partial content is not 'Das is'" );
+		   test.stop();
+		}, once ) );
+		
+		fileResponse.loadData( FILE_PATH, "bytes=-5" );
 	};
 	
 }
