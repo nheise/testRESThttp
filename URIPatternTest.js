@@ -1,26 +1,39 @@
-/**
- * 
- */
 
 var assert = require('assert');
 
 var uriPattern = require('../RESThttp/lib/URIPattern.js');
 
-var uriPatterns = [
-	uriPattern.create("/test/{id}"),
-	uriPattern.create("/products/{category}/{id}")
-];
-var uris = [
-	"/test/1234",
-	"/products/shoes/1234"
-];
 
-for(index in uris) {
-	assert.ok(uriPatterns[index].match(uris[index]), "no hit");
+function checkPattern( patternString, okWith, mustFailWith, checkArgs ) {
+
+  var pattern = uriPattern.create( patternString );
+
+  for( index in okWith ) {
+    assert.ok( pattern.match( okWith[index] ) );
+  }
+  for( index in mustFailWith ) {
+    assert.equal( pattern.match( mustFailWith[index] ), false );
+  }
+  for( index in checkArgs ) {
+    var vars = pattern.resolveArgs( checkArgs[index].uri );
+    assert.deepEqual( vars, checkArgs[index].checkVars );
+  }
 }
 
-var vars = uriPatterns[1].resolve(uris[1]);
-assert.equal(vars.category, "shoes");
-assert.equal(vars.id, "1234");
+checkPattern( "/test", 
+            [ "/test", "/test/" ], 
+            [ "test", "test/", "/test1", "/test1/", "/test1/value1", "/test1/value1/" ],
+            [ { uri : "/test", checkVars : {} },
+              { uri : "/test/", checkVars : {} } ] );
+checkPattern( "/test2/{var1}",
+            [ "/test2/value1", "/test2/value1/" ],
+            [ "/test", "/test1/", "/test1/value1", "/test2/value1/value2" ],
+            [ { uri : "/test2/value1", checkVars : { var1 : "value1" } },
+              { uri : "/test2/value1/", checkVars : { var1 : "value1" } } ] );
+checkPattern( "/test3/{var1}/{var2}",
+            [ "/test3/value1/value2", "/test3/value1/value2/" ],
+            [ "/test3", "/test3/", "/test3/value1", "/test3/value1/value2/value3", "/test3/value1/value2/value3/" ],
+            [ { uri : "/test3/value1/value2", checkVars : { var1 : "value1", var2 : "value2" } },
+              { uri : "/test3/value1/value2/", checkVars : { var1 : "value1", var2 : "value2" } } ] );
 
-console.log("URIMatcher Test successful!");
+console.log("URIMatcherTest successful.");

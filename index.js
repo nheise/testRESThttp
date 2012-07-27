@@ -1,0 +1,12 @@
+require('./FileResponsesTest.js');
+require('./FindAcceptedMediaTypeTest.js');
+require('./HTTPHeaderUtilTest.js');
+require('./InitialRequestProcessorTest.js');
+require('./ModuleRepositoryTest.js');
+require('./RequestFactoryTest.js');
+require('./ResolveRequestArgsAndExecuteRequestHandlerTest.js');
+require('./ResourceLocatorFinderTest.js');
+require('./ResourceLocatorSupportsRequestMethodTest.js');
+require('./ResponseUtilTest.js');
+require('./URIPatternTest.js');
+require('./util/ArrayUtilTest.js');
