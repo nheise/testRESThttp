@@ -127,4 +127,83 @@ streamFileResponseTest( {
   }
 });
 
+function bufferedFileResponseTest( config ) {
+  var writeStream = fs.createWriteStream( '/dev/null' );
+  
+  writeStream.writeHead = config.responseHeadCheck;
+    
+  writeStream.end = config.endStreamCheck;
+
+  writeStream.on( 'error', function( exception ) { console.log('error');console.log(exception); } );
+      
+  var context = {
+    request : {
+      headers : config.request.headers
+    },
+    requestListener : {
+    },
+    responseStream : writeStream,
+    response : { headers : {} }
+  };
+
+  var bufferedFileResponse = fileResponses.createBufferedFileResponse( config.filePathStrategy );
+  bufferedFileResponse( context );
+}
+
+// buffered file response complete content
+bufferedFileResponseTest( {
+  filePathStrategy : check.filePathStrategy,
+  request : { headers : {} },
+  responseHeadCheck : function( httpStatusCode, reasonPhrase, headers ) {
+    assert.equal( httpStatusCode, 200, 'http status code' );
+    assert.equal( reasonPhrase, 'OK', 'reason phrase' );
+    assert.equal( headers['accept-ranges'], 'bytes', 'accept range in response header' );
+    assert.equal( headers['content-length'], check.testFileContent.length, 'content length in response header' );
+  },
+  endStreamCheck : function( data, encoding ) {
+    assert.equal( data, check.testFileContent, 'response content' );
+//    assert.equal( encoding, 'utf8', 'encoding should be utf8' );
+  } 
+});
+
+// buffered file response begin and end range
+bufferedFileResponseTest( {
+  filePathStrategy : check.filePathStrategy,
+  request : {
+    headers : {
+      'range' : 'bytes=3-6'
+    }
+  },
+  responseHeadCheck : function( httpStatusCode, reasonPhrase, headers ) {
+    assert.equal( httpStatusCode, 206, 'http status code' );
+    assert.equal( reasonPhrase, 'Partial Content', 'reason phrase' );
+    assert.equal( headers['accept-ranges'], 'bytes', 'accept range in response header' );
+    assert.equal( headers['content-length'], 4, 'content length in response header' );
+    assert.equal( headers['content-range'], 'bytes 3-6/24', 'content range in response header' );
+  },
+  endStreamCheck : function( data, encoding ) {
+   assert.equal( data.toString(), check.testFileContent.slice( 3, 7 ), 'response content' );
+  }
+});
+
+// buffered file response start range only
+bufferedFileResponseTest( {
+  filePathStrategy : check.filePathStrategy,
+  request : {
+    headers : {
+      'range' : 'bytes=3-'
+    }
+  },
+  responseHeadCheck : function( httpStatusCode, reasonPhrase, headers ) {
+    assert.equal( httpStatusCode, 206, 'http status code' );
+    assert.equal( reasonPhrase, 'Partial Content', 'reason phrase' );
+    assert.equal( headers['accept-ranges'], 'bytes', 'accept range in response header' );
+    assert.equal( headers['content-length'], 21, 'content length in response header' );
+    assert.equal( headers['content-range'], 'bytes 3-23/24', 'content range in response header' );
+  },
+  endStreamCheck : function( data, encoding ) {
+   assert.equal( data.toString(), check.testFileContent.slice( 3 ), 'response content' );
+  }
+});
+
 console.log( 'FileResponsesTest successful.' );

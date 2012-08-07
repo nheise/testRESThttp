@@ -27,6 +27,7 @@ assert.equal( headerUtil.hasRange( {} ), false, 'hasRange should be false with n
 
 assert.deepEqual( headerUtil.extractRange( headerWithStartEndRange ), { start : check.start, end : check.end, length : check.length },  'range should have start, end and length');
 assert.deepEqual( headerUtil.extractRange( headerWithStartOnlyRange ), { start : check.start, end : undefined, length : undefined },  'range should have start and undefined end and length');
+assert.deepEqual( headerUtil.extractRange( headerWithStartOnlyRange, check.size ), { start : check.start, end : check.size - 1, length : check.size - check.start },  'range should have start and undefined end and length');
 
 assert.deepEqual( headerUtil.extractRange( headerWithEndOnlyRange ), { start : 0, end : check.end, length : check.end + 1 },  'range should have start, end and length');
 
