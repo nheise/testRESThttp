@@ -1,6 +1,7 @@
 var assert = require('assert');
 
 var responseUtil = require('RESThttp').responseUtil;
+var responseFactory = require('../RESThttp/lib/ResponseFactory.js');
 
 var context;
 
@@ -10,13 +11,18 @@ function setUpContext( checkWriteHead, checkEnd ) {
     writeHead : checkWriteHead,
     end : checkEnd || function(){}
   };
-  context.response = { headers : {}, encoding : 'utf8' };
+  context.response = responseFactory.create();//{ headers : {}, encoding : 'utf8' };
 }
 
-setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
-  assert.equal( httpStatusCode, 200, 'status code should be 200' );
-  assert.equal( reasonPhrase, 'OK', 'reason phrase should be OK' );
-});
+setUpContext( 
+  function( httpStatusCode, reasonPhrase, headers ) {
+    assert.equal( httpStatusCode, 200, 'status code should be 200' );
+    assert.equal( reasonPhrase, 'OK', 'reason phrase should be OK' );
+  },
+  function() {
+    assert( false, 'should never be invoked.' );
+  }
+);
 responseUtil.writeHead200( context );
 
 setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
@@ -27,7 +33,17 @@ function( data, encoding ) {
   assert.equal( data, "", 'data should be an empty string' );
   assert.equal( encoding, 'utf8', 'encoding should be utf8' );
 });
-responseUtil.send200( context, null, 'utf8' );
+responseUtil.send200( context );
+
+setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
+  assert.equal( httpStatusCode, 201, 'status code should be 201' );
+  assert.equal( reasonPhrase, 'Created', 'reason phrase should be Created' );
+},
+function( data, encoding ) {
+  assert.equal( data, "", 'data should be an empty string' );
+  assert.equal( encoding, 'utf8', 'encoding should be utf8' );
+});
+responseUtil.send201( context );
 
 setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
   assert.equal( httpStatusCode, 206, 'status code should be 206' );
@@ -43,7 +59,27 @@ function( data, encoding ) {
   assert.equal( data, "", 'data should be an empty string' );
   assert.equal( encoding, 'utf8', 'encoding should be utf8' );
 });
-responseUtil.send206( context, null, 'utf8' );
+responseUtil.send206( context );
+
+setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
+  assert.equal( httpStatusCode, 302, 'status code should be 302' );
+  assert.equal( reasonPhrase, 'Found', 'reason phrase should be Found' );
+},
+function( data, encoding ) {
+  assert.equal( data, "", 'data should be an empty string' );
+  assert.equal( encoding, 'utf8', 'encoding should be utf8' );
+});
+responseUtil.send302( context );
+
+setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
+  assert.equal( httpStatusCode, 307, 'status code should be 307' );
+  assert.equal( reasonPhrase, 'Temporary Redirect', 'reason phrase should be Temporary Redirect' );
+},
+function( data, encoding ) {
+  assert.equal( data, "", 'data should be an empty string' );
+  assert.equal( encoding, 'utf8', 'encoding should be utf8' );
+});
+responseUtil.send307( context );
 
 setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
   assert.equal( httpStatusCode, 404, 'status code should be 404' );
