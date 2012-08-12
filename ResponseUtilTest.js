@@ -72,6 +72,16 @@ function( data, encoding ) {
 responseUtil.send302( context );
 
 setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
+  assert.equal( httpStatusCode, 303, 'status code should be 303' );
+  assert.equal( reasonPhrase, 'See Other', 'reason phrase should be Found' );
+},
+function( data, encoding ) {
+  assert.equal( data, "", 'data should be an empty string' );
+  assert.equal( encoding, 'utf8', 'encoding should be utf8' );
+});
+responseUtil.send303( context );
+
+setUpContext( function( httpStatusCode, reasonPhrase, headers ) {
   assert.equal( httpStatusCode, 307, 'status code should be 307' );
   assert.equal( reasonPhrase, 'Temporary Redirect', 'reason phrase should be Temporary Redirect' );
 },
